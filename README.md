@@ -28,6 +28,6 @@ Top5 accuracy: ~71%
     4.0000    0.6703
     5.0000    0.7096
 
-For comparision ResNet152: 
+For comparison ResNet152 accuracy: 
 Top1 ~55% 
 Top5 ~85%
