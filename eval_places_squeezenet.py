@@ -28,7 +28,9 @@ from draw_net_graph import draw_to_file, make_pydot_graph
 import multiprocessing
 from multiprocessing import Process, Queue
 
-
+def float32(k):
+    return np.cast['float32'](k)
+    
 ############### load mean image file ###############
 MEAN_IMAGE = np.load('places365_mean_image.npy')
 _,c, h, w = MEAN_IMAGE.shape
@@ -57,17 +59,17 @@ val_list_idx = np.arange(0,nrImagesTotal)
 # build model and load weights 
 input_img = T.tensor4()
 target_var = T.ivector('targets')
-print('building squeezenet')
+print('building squeezenet and loading weights')
 block_names = ['fire'+str(i)+'/' for i in range(2,10)]
 squeezenet = build_squeeznetv2(input_img,block_names,max_num_categories)
 
 # set model weights from pre-trained network
-with open('squeezenet_42.15.params','rb') as f:
+with open('squeezenet_weights_places365','rb') as f:
     modelweights = pickle.load(f)
 lasagne.layers.set_all_param_values(squeezenet['prob'],modelweights)
 
 
-print('compiling estimation function')
+print('compiling prediction function')
 # Create a loss expression for validation/testing. The crucial difference
 # here is that we do a deterministic forward pass through the network,
 # disabling dropout layers.
@@ -89,7 +91,8 @@ for start_idx in range(0, nrImagesTotal + 1, BATCH_SIZE):
         for i in range(len(excerpt)):
             idx = val_list_idx[excerpt[i]]
             path2img = img_dir+filenames[idx]
-            Xtemp = np.asarray(Image.open(path2img.rstrip('\n')),dtype=np.float32)
+            Xtemp = float32(cv2.imread(path2img.rstrip('\n')))
+            #Xtemp = np.asarray(Image.open(path2img.rstrip('\n')),dtype=np.float32)
             h, w, _ = Xtemp.shape
             Xsmall = Xtemp[h//2-112:h//2+112, w//2-112:w//2+112]
             Xsmall = np.transpose(Xsmall,(2,0,1)) - MEAN_IMAGE_CENTER_CROP
