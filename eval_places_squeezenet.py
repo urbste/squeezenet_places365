@@ -32,6 +32,7 @@ from multiprocessing import Process, Queue
 ############### load mean image file ###############
 MEAN_IMAGE = np.load('places365_mean_image.npy')
 _,c, h, w = MEAN_IMAGE.shape
+MEAN_IMAGE_CENTER_CROP = MEAN_IMAGE[0,:,h//2-112:h//2+112, w//2-112:w//2+112]
 
 BATCH_SIZE = 100
 inputH = 224
@@ -91,7 +92,7 @@ for start_idx in range(0, nrImagesTotal + 1, BATCH_SIZE):
             Xtemp = np.asarray(Image.open(path2img.rstrip('\n')),dtype=np.float32)
             h, w, _ = Xtemp.shape
             Xsmall = Xtemp[h//2-112:h//2+112, w//2-112:w//2+112]
-            Xsmall = np.transpose(Xsmall,(2,0,1)) - MEAN_IMAGE[0,:,ys:ys+inputH, xs:xs+inputW]
+            Xsmall = np.transpose(Xsmall,(2,0,1)) - MEAN_IMAGE_CENTER_CROP
             X_data[[i],:,:,:] = np.float32(Xsmall)/255. 
 
         y_predicted = predict_fn(X_data)
